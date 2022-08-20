@@ -1,5 +1,6 @@
 #include <gflags/gflags.h>
 #include <glog/logging.h>
+#include <iostream>
 #include <pcl/io/pcd_io.h>
 #include <pcl/io/ply_io.h>
 #include <pcl/point_types.h>
@@ -11,6 +12,7 @@
 DEFINE_string(target_cloud, "", "Defines the path to the target cloud.");
 DEFINE_string(source_cloud, "", "Defines the path to the source cloud.");
 DEFINE_string(reg_cloud, "", "Defines the path to the registered cloud.");
+DEFINE_string(result_folder, "", "Defines the path to the results.");
 
 static model::PointCloudPtr readPointCloud(const std::string& path_to_ply) {
   CHECK(!path_to_ply.empty());
@@ -40,7 +42,17 @@ static void registerCloud(
   model::RegistrationResult result =
       ctrl->registerPointCloud(target_cloud, source_cloud);
 
+  std::ofstream results_csv;
+  results_csv.open(FLAGS_result_folder + "results.csv");
+  results_csv << "peak_n x_r y_r z_r x_t y_t z_t" << std::endl;
   LOG(INFO) << "Registration result: " << result.getStateAsVec().transpose();
+  results_csv << "0" << " "
+                << result.getRotation().transpose()(0) << " "
+                << result.getRotation().transpose()(1) << " "
+                << result.getRotation().transpose()(2) << " "
+                << result.getTranslation().transpose()(0) << " "
+                << result.getTranslation().transpose()(1) << " "
+                << result.getTranslation().transpose()(2) << std::endl;
   writePointCloud(reg_cloud, result.getRegisteredCloud());
 }
 

@@ -1,4 +1,4 @@
-#!/usr/bin/env zsh
+#!/usr/bin/env sh
 REST=$@
 EXP_DIR="./phaser_test_data/test_clouds/os0/"
 
@@ -19,7 +19,7 @@ rosrun phaser_core phaser_core_driver \
   --phaser_core_spatial_low_pass_upper_bound=115 \
   --phaser_core_spatial_zero_padding=0 \
   --gaussian_peak_neighbors=0 \
-  --bingham_peak_neighbors=0 \
+  --bingham_peak_neighbors=2 \
   --z_score_filter_threshold=0.01 \
   --z_score_lag_max=3 \
   --z_score_threshold=3.0 \
