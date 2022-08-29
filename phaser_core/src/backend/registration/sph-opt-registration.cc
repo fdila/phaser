@@ -4,6 +4,7 @@
 #include <fftw3/fftw3.h>
 #include <glog/logging.h>
 #include <iostream>
+#include <fstream>
 
 #include "phaser/backend/alignment/phase-aligner.h"
 #include "phaser/backend/correlation/spherical-combined-worker.h"
@@ -41,7 +42,36 @@ model::RegistrationResult SphOptRegistration::registerPointCloud(
   cloud_prev->initialize_kd_tree();
 
   // Register the point cloud.
+  //read gt
+
+  if (FLAGS_truth_path.empty()) {
+    LOG(FATAL) << "No truth file specified.";
+  }
+
+  std::ifstream input_gt(FLAGS_truth_path);
+  if (!input_gt.is_open() || !input_gt.good()) {
+    LOG(FATAL) << "Unable to open truth file. Aborting";
+  }
+  std::vector<double> gt_translation;
+  std::string line;
+
+  while (std::getline(input_gt, line)) {
+    std::stringstream lineStream(line);
+    std::string cell;
+    while (std::getline(lineStream, cell, ',')) {
+      gt_translation.emplace_back(std::stod(cell));
+    }
+  }
+  
+  VLOG(1) << "gt_translation: " << gt_translation.at(0) << " " << gt_translation.at(1) << " " << gt_translation.at(2);
+
+  //transform cloud_prev to sensor frame
+  common::TranslationUtils::TranslateXYZ(
+      cloud_cur, -gt_translation.at(0), -gt_translation.at(1), -gt_translation.at(2));
   model::RegistrationResult result = estimateRotation(cloud_prev, cloud_cur);
+  //translate back to world frame
+  common::TranslationUtils::TranslateXYZ(
+      result.getRegisteredCloud(), gt_translation.at(0), gt_translation.at(1), gt_translation.at(2));
   estimateTranslation(cloud_prev, &result);
   return result;
 }

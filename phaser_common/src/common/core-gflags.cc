@@ -38,4 +38,6 @@ DEFINE_int32(
     phaser_core_spatial_low_pass_upper_bound, 100000,
     "Defines the lower frequency bound of the spatial low pass filtering.");
 
+DEFINE_string(truth_path, ".gt.txt", "gt for the translation.");
+
 }  // namespace phaser_core
